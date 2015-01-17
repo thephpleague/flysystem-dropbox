@@ -12,7 +12,7 @@
 ## Installation
 
 ```bash
-composer require league\flysystem-dropbox
+composer require league/flysystem-dropbox
 ```
 
 ## Usage
