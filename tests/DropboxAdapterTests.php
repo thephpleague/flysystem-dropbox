@@ -1,7 +1,7 @@
 <?php
 
-use League\Flysystem\Dropbox\DropboxAdapter as Dropbox;
 use League\Flysystem\Config;
+use League\Flysystem\Dropbox\DropboxAdapter as Dropbox;
 
 class DropboxTests extends PHPUnit_Framework_TestCase
 {
@@ -33,7 +33,7 @@ class DropboxTests extends PHPUnit_Framework_TestCase
     public function testWrite($adapter, $mock)
     {
         $mock->shouldReceive('uploadFileFromString')->andReturn([
-            'is_dir' => false,
+            'is_dir'   => false,
             'modified' => '10 September 2000',
         ], false);
 
@@ -50,7 +50,7 @@ class DropboxTests extends PHPUnit_Framework_TestCase
     public function testUpdate(Dropbox $adapter, $mock)
     {
         $mock->shouldReceive('uploadFileFromString')->andReturn([
-            'is_dir' => false,
+            'is_dir'   => false,
             'modified' => '10 September 2000',
         ], false);
 
@@ -67,7 +67,7 @@ class DropboxTests extends PHPUnit_Framework_TestCase
     public function testWriteStream(Dropbox $adapter, $mock)
     {
         $mock->shouldReceive('uploadFile')->andReturn([
-            'is_dir' => false,
+            'is_dir'   => false,
             'modified' => '10 September 2000',
         ], false);
 
@@ -84,7 +84,7 @@ class DropboxTests extends PHPUnit_Framework_TestCase
     public function testUpdateStream(Dropbox $adapter, $mock)
     {
         $mock->shouldReceive('uploadFile')->andReturn([
-            'is_dir' => false,
+            'is_dir'   => false,
             'modified' => '10 September 2000',
         ], false);
 
@@ -113,7 +113,7 @@ class DropboxTests extends PHPUnit_Framework_TestCase
     {
         $mock = $this->getClientMock();
         $mock->shouldReceive('getMetadata')->twice()->andReturn([
-            'is_dir' => false,
+            'is_dir'   => false,
             'modified' => '10 September 2000',
         ], false);
 
@@ -166,7 +166,7 @@ class DropboxTests extends PHPUnit_Framework_TestCase
         $mock->shouldReceive('createFolder')->with('/prefix/fail/please')->andReturn(null);
         $mock->shouldReceive('createFolder')->with('/prefix/pass/please')->andReturn([
             'is_dir' => true,
-            'path' => 'pass/please',
+            'path'   => 'pass/please',
         ]);
         $this->assertFalse($adapter->createDir('fail/please', new Config()));
         $expected = ['path' => 'pass/please', 'type' => 'dir'];
