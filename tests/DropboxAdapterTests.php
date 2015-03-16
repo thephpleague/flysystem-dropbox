@@ -180,16 +180,19 @@ class DropboxTests extends PHPUnit_Framework_TestCase
     {
         $mock->shouldReceive('getMetadataWithChildren')->andReturn(
             ['contents' => [
-                ['is_dir' => true, 'path' => 'dirname'],
+                ['is_dir' => true, 'path' => 'Root/dirname'],
             ]],
             ['contents' => [
-                ['is_dir' => false, 'path' => 'dirname/file'],
+                ['is_dir' => false, 'path' => 'root/dirname/file'],
             ]],
             false
         );
 
+        $adapter->setPathPrefix(null);
         $result = $adapter->listContents('', true);
         $this->assertCount(2, $result);
+        $this->assertEquals('Root/dirname/file', $result[1]['path']);
+
         $this->assertEquals([], $adapter->listContents('', false));
     }
 
