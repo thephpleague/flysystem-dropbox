@@ -71,11 +71,11 @@ class DropboxTests extends PHPUnit_Framework_TestCase
             'modified' => '10 September 2000',
         ], false);
 
-        $result = $adapter->writeStream('something', 'contents', new Config());
+        $result = $adapter->writeStream('something', tmpfile(), new Config());
         $this->assertInternalType('array', $result);
         $this->assertArrayHasKey('type', $result);
         $this->assertEquals('file', $result['type']);
-        $this->assertFalse($adapter->writeStream('something', 'something', new Config()));
+        $this->assertFalse($adapter->writeStream('something', tmpfile(), new Config()));
     }
 
     /**
@@ -88,11 +88,11 @@ class DropboxTests extends PHPUnit_Framework_TestCase
             'modified' => '10 September 2000',
         ], false);
 
-        $result = $adapter->updateStream('something', 'contents', new Config());
+        $result = $adapter->updateStream('something', tmpfile(), new Config());
         $this->assertInternalType('array', $result);
         $this->assertArrayHasKey('type', $result);
         $this->assertEquals('file', $result['type']);
-        $this->assertFalse($adapter->updateStream('something', 'something', new Config()));
+        $this->assertFalse($adapter->updateStream('something', tmpfile(), new Config()));
     }
 
     public function metadataProvider()
