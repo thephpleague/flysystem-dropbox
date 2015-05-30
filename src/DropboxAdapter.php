@@ -300,7 +300,10 @@ class DropboxAdapter extends AbstractAdapter
     {
         $location = $this->applyPathPrefix($path);
 
-        if (! $result = $this->client->uploadFile($location, $mode, $resource)) {
+        // If size is zero, consider it unknown.
+        $size = Util::getStreamSize($resource) ?: null;
+
+        if (! $result = $this->client->uploadFile($location, $mode, $resource, $size)) {
             return false;
         }
 
