@@ -230,6 +230,6 @@ class DropboxTests extends PHPUnit_Framework_TestCase
      */
     public function testGetClient($adapter)
     {
-        $this->assertInstanceOf(Client::class, $adapter->getClient());
+        $this->assertInstanceOf('Dropbox\Client', $adapter->getClient());
     }
 }
