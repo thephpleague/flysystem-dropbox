@@ -18,8 +18,8 @@ class DropboxAdapter extends AbstractAdapter
      * @var array
      */
     protected static $resultMap = [
-        'bytes'          => 'size',
-        'mime_type'      => 'mimetype',
+        'bytes' => 'size',
+        'mime_type' => 'mimetype',
     ];
 
     /**
@@ -84,7 +84,7 @@ class DropboxAdapter extends AbstractAdapter
      */
     public function read($path)
     {
-        if (! $object = $this->readStream($path)) {
+        if ( ! $object = $this->readStream($path)) {
             return false;
         }
 
@@ -103,7 +103,7 @@ class DropboxAdapter extends AbstractAdapter
         $stream = fopen('php://temp', 'w+');
         $location = $this->applyPathPrefix($path);
 
-        if (! $this->client->getFile($location, $stream)) {
+        if ( ! $this->client->getFile($location, $stream)) {
             fclose($stream);
 
             return false;
@@ -189,7 +189,7 @@ class DropboxAdapter extends AbstractAdapter
         $location = $this->applyPathPrefix($path);
         $object = $this->client->getMetadata($location);
 
-        if (! $object) {
+        if ( ! $object) {
             return false;
         }
 
@@ -237,7 +237,7 @@ class DropboxAdapter extends AbstractAdapter
         $directory = trim($directory, '/.');
         $location = $this->applyPathPrefix($directory);
 
-        if (! $result = $this->client->getMetadataWithChildren($location)) {
+        if ( ! $result = $this->client->getMetadataWithChildren($location)) {
             return [];
         }
 
@@ -264,7 +264,7 @@ class DropboxAdapter extends AbstractAdapter
     {
         $path = parent::applyPathPrefix($path);
 
-        return '/'.rtrim($path, '/');
+        return '/' . rtrim($path, '/');
     }
 
     /**
@@ -280,7 +280,7 @@ class DropboxAdapter extends AbstractAdapter
     {
         $location = $this->applyPathPrefix($path);
 
-        if (! $result = $this->client->uploadFileFromString($location, $mode, $contents)) {
+        if ( ! $result = $this->client->uploadFileFromString($location, $mode, $contents)) {
             return false;
         }
 
@@ -303,7 +303,7 @@ class DropboxAdapter extends AbstractAdapter
         // If size is zero, consider it unknown.
         $size = Util::getStreamSize($resource) ?: null;
 
-        if (! $result = $this->client->uploadFile($location, $mode, $resource, $size)) {
+        if ( ! $result = $this->client->uploadFile($location, $mode, $resource, $size)) {
             return false;
         }
 
@@ -313,14 +313,13 @@ class DropboxAdapter extends AbstractAdapter
     /**
      * Normalize a Dropbox response.
      *
-     * @param        $response
-     * @param string $path
+     * @param array $response
      *
      * @return array
      */
-    protected function normalizeResponse(array $response, $path = null)
+    protected function normalizeResponse(array $response)
     {
-        $result = ['path' => trim($path ?: $response['path'], '/')];
+        $result = ['path' => ltrim($this->removePathPrefix($response['path']), '/')];
 
         if (isset($response['modified'])) {
             $result['timestamp'] = strtotime($response['modified']);

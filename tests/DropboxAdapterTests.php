@@ -1,29 +1,18 @@
 <?php
 
+use Dropbox\Client;
 use League\Flysystem\Config;
 use League\Flysystem\Dropbox\DropboxAdapter as Dropbox;
+use Prophecy\Argument;
 
 class DropboxTests extends PHPUnit_Framework_TestCase
 {
-    public function getClientMock()
-    {
-        $mock = Mockery::mock('Dropbox\Client');
-        $mock->shouldReceive('__toString')->andReturn('Dropbox\Client');
-
-        return $mock;
-    }
-
-    public function testInstantiable()
-    {
-        new Dropbox($this->getClientMock(), 'prefix');
-    }
-
     public function dropboxProvider()
     {
-        $mock = $this->getClientMock();
+        $mock = $this->prophesize('Dropbox\Client');
 
         return [
-            [new Dropbox($mock, 'prefix'), $mock],
+            [new Dropbox($mock->reveal(), 'prefix'), $mock],
         ];
     }
 
@@ -32,9 +21,10 @@ class DropboxTests extends PHPUnit_Framework_TestCase
      */
     public function testWrite($adapter, $mock)
     {
-        $mock->shouldReceive('uploadFileFromString')->andReturn([
+        $mock->uploadFileFromString(Argument::any(), Argument::any(), Argument::any())->willReturn([
             'is_dir'   => false,
             'modified' => '10 September 2000',
+            'path' => '/prefix/something',
         ], false);
 
         $result = $adapter->write('something', 'contents', new Config());
@@ -49,9 +39,10 @@ class DropboxTests extends PHPUnit_Framework_TestCase
      */
     public function testUpdate(Dropbox $adapter, $mock)
     {
-        $mock->shouldReceive('uploadFileFromString')->andReturn([
+        $mock->uploadFileFromString(Argument::any(), Argument::any(), Argument::any())->willReturn([
             'is_dir'   => false,
             'modified' => '10 September 2000',
+            'path' => '/prefix/something'
         ], false);
 
         $result = $adapter->update('something', 'contents', new Config());
@@ -66,9 +57,10 @@ class DropboxTests extends PHPUnit_Framework_TestCase
      */
     public function testWriteStream(Dropbox $adapter, $mock)
     {
-        $mock->shouldReceive('uploadFile')->andReturn([
+        $mock->uploadFile(Argument::any(), Argument::any(), Argument::any(), null)->willReturn([
             'is_dir'   => false,
             'modified' => '10 September 2000',
+            'path' => '/prefix/something'
         ], false);
 
         $result = $adapter->writeStream('something', tmpfile(), new Config());
@@ -83,9 +75,10 @@ class DropboxTests extends PHPUnit_Framework_TestCase
      */
     public function testUpdateStream(Dropbox $adapter, $mock)
     {
-        $mock->shouldReceive('uploadFile')->andReturn([
+        $mock->uploadFile(Argument::any(), Argument::any(), Argument::any(), null)->willReturn([
             'is_dir'   => false,
             'modified' => '10 September 2000',
+            'path' => '/prefix/something'
         ], false);
 
         $result = $adapter->updateStream('something', tmpfile(), new Config());
@@ -111,13 +104,14 @@ class DropboxTests extends PHPUnit_Framework_TestCase
      */
     public function testMetadataCalls($method)
     {
-        $mock = $this->getClientMock();
-        $mock->shouldReceive('getMetadata')->twice()->andReturn([
+        $mock = $this->prophesize('Dropbox\Client');
+        $mock->getMetadata('/one')->willReturn([
             'is_dir'   => false,
             'modified' => '10 September 2000',
+            'path' => '/one'
         ], false);
 
-        $adapter = new Dropbox($mock);
+        $adapter = new Dropbox($mock->reveal());
         $this->assertInternalType('array', $adapter->{$method}('one', 'two'));
         $this->assertFalse($adapter->{$method}('one', 'two'));
     }
@@ -129,7 +123,7 @@ class DropboxTests extends PHPUnit_Framework_TestCase
     {
         $stream = tmpfile();
         fwrite($stream, 'something');
-        $mock->shouldReceive('getFile')->andReturn($stream, false);
+        $mock->getFile(Argument::any(), Argument::any())->willReturn($stream, false);
         $this->assertInternalType('array', $adapter->read('something'));
         $this->assertFalse($adapter->read('something'));
         fclose($stream);
@@ -142,7 +136,7 @@ class DropboxTests extends PHPUnit_Framework_TestCase
     {
         $stream = tmpfile();
         fwrite($stream, 'something');
-        $mock->shouldReceive('getFile')->andReturn($stream, false);
+        $mock->getFile(Argument::any(), Argument::any())->willReturn($stream, false);
         $this->assertInternalType('array', $adapter->readStream('something'));
         $this->assertFalse($adapter->readStream('something'));
         fclose($stream);
@@ -153,7 +147,7 @@ class DropboxTests extends PHPUnit_Framework_TestCase
      */
     public function testDelete(Dropbox $adapter, $mock)
     {
-        $mock->shouldReceive('delete')->andReturn(true);
+        $mock->delete('/prefix/something')->willReturn(true);
         $this->assertTrue($adapter->delete('something'));
         $this->assertTrue($adapter->deleteDir('something'));
     }
@@ -163,10 +157,10 @@ class DropboxTests extends PHPUnit_Framework_TestCase
      */
     public function testCreateDir(Dropbox $adapter, $mock)
     {
-        $mock->shouldReceive('createFolder')->with('/prefix/fail/please')->andReturn(null);
-        $mock->shouldReceive('createFolder')->with('/prefix/pass/please')->andReturn([
+        $mock->createFolder('/prefix/fail/please')->willReturn(null);
+        $mock->createFolder('/prefix/pass/please')->willReturn([
             'is_dir' => true,
-            'path'   => 'pass/please',
+            'path'   => '/prefix/pass/please',
         ]);
         $this->assertFalse($adapter->createDir('fail/please', new Config()));
         $expected = ['path' => 'pass/please', 'type' => 'dir'];
@@ -178,7 +172,7 @@ class DropboxTests extends PHPUnit_Framework_TestCase
      */
     public function testListContents(Dropbox $adapter, $mock)
     {
-        $mock->shouldReceive('getMetadataWithChildren')->andReturn(
+        $mock->getMetadataWithChildren(Argument::type('string'))->willReturn(
             ['contents' => [
                 ['is_dir' => true, 'path' => 'dirname'],
             ]],
@@ -198,7 +192,7 @@ class DropboxTests extends PHPUnit_Framework_TestCase
      */
     public function testRename($adapter, $mock)
     {
-        $mock->shouldReceive('move')->andReturn(['is_dir' => false, 'path' => 'something']);
+        $mock->move(Argument::type('string'), Argument::type('string'))->willReturn(['is_dir' => false, 'path' => 'something']);
         $this->assertTrue($adapter->rename('something', 'something'));
     }
 
@@ -207,9 +201,7 @@ class DropboxTests extends PHPUnit_Framework_TestCase
      */
     public function testRenameFail($adapter, $mock)
     {
-        $mock->shouldReceive('move')->andReturnUsing(function () {
-            throw new \Dropbox\Exception('Message');
-        });
+        $mock->move('/prefix/something', '/prefix/something')->willThrow(new \Dropbox\Exception('Message'));
 
         $this->assertFalse($adapter->rename('something', 'something'));
     }
@@ -219,7 +211,7 @@ class DropboxTests extends PHPUnit_Framework_TestCase
      */
     public function testCopy($adapter, $mock)
     {
-        $mock->shouldReceive('copy')->andReturn(['is_dir' => false, 'path' => 'something']);
+        $mock->copy(Argument::type('string'), Argument::type('string'))->willReturn(['is_dir' => false, 'path' => 'something']);
         $this->assertTrue($adapter->copy('something', 'something'));
     }
 
@@ -228,9 +220,7 @@ class DropboxTests extends PHPUnit_Framework_TestCase
      */
     public function testCopyFail($adapter, $mock)
     {
-        $mock->shouldReceive('copy')->andReturnUsing(function () {
-            throw new \Dropbox\Exception('Message');
-        });
+        $mock->copy(Argument::any(), Argument::any())->willThrow(new \Dropbox\Exception('Message'));
 
         $this->assertFalse($adapter->copy('something', 'something'));
     }
@@ -238,8 +228,8 @@ class DropboxTests extends PHPUnit_Framework_TestCase
     /**
      * @dataProvider  dropboxProvider
      */
-    public function testGetClient($adapter, $mock)
+    public function testGetClient($adapter)
     {
-        $this->assertEquals($mock, $adapter->getClient());
+        $this->assertInstanceOf(Client::class, $adapter->getClient());
     }
 }
