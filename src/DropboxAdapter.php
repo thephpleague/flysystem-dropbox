@@ -154,8 +154,9 @@ class DropboxAdapter extends AbstractAdapter
     public function delete($path)
     {
         $location = $this->applyPathPrefix($path);
+        $result = $this->client->delete($location);
 
-        return $this->client->delete($location);
+        return isset($result['is_deleted']) ? $result['is_deleted'] : false;
     }
 
     /**

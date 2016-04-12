@@ -147,7 +147,7 @@ class DropboxTests extends PHPUnit_Framework_TestCase
      */
     public function testDelete(Dropbox $adapter, $mock)
     {
-        $mock->delete('/prefix/something')->willReturn(true);
+        $mock->delete('/prefix/something')->willReturn(['is_deleted' => true]);
         $this->assertTrue($adapter->delete('something'));
         $this->assertTrue($adapter->deleteDir('something'));
     }
