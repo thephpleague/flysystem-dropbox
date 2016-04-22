@@ -4,6 +4,7 @@ namespace League\Flysystem\Dropbox;
 
 use Dropbox\Client;
 use Dropbox\Exception;
+use Dropbox\Exception_BadResponseCode;
 use Dropbox\WriteMode;
 use League\Flysystem\Adapter\AbstractAdapter;
 use League\Flysystem\Adapter\Polyfill\NotSupportingVisibilityTrait;
@@ -188,7 +189,16 @@ class DropboxAdapter extends AbstractAdapter
     public function getMetadata($path)
     {
         $location = $this->applyPathPrefix($path);
-        $object = $this->client->getMetadata($location);
+
+        try {
+            $object = $this->client->getMetadata($location);
+        } catch(Exception_BadResponseCode $e) {
+            if ($e->getStatusCode() === 301) {
+                return false;
+            }
+
+            throw $e;
+        }
 
         if ( ! $object) {
             return false;
