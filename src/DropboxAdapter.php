@@ -273,9 +273,10 @@ class DropboxAdapter extends AbstractAdapter
      */
     public function applyPathPrefix($path)
     {
+
         $path = parent::applyPathPrefix($path);
 
-        return '/' . rtrim($path, '/');
+        return '/' . ltrim(rtrim($path, '/'), '/');
     }
 
     /**
