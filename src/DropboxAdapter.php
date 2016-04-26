@@ -254,6 +254,7 @@ class DropboxAdapter extends AbstractAdapter
 
         foreach ($result['contents'] as $object) {
             $path = $this->removePathPrefix($object['path']);
+            $path = str_replace(mb_strtolower($directory), $directory, $path);
             $listing[] = $this->normalizeResponse($object, $path);
 
             if ($recursive && $object['is_dir']) {
