@@ -26,6 +26,7 @@
     },
     "min-stability": "dev",
     "prefer-stable": true,
+    "abandon": "This package will stop working after 28 june 2017. Use spatie/flystem-dropbox after that date"
     "extra": {
         "branch-alias": {
             "dev-master": "1.0-dev"
